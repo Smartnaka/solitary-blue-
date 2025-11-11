@@ -1,14 +1,58 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { GameBoard } from './components/GameBoard';
 import { GameStatus } from './components/GameStatus';
 import { LEVELS } from './constants';
 import type { Level } from './types';
 
 const App: React.FC = () => {
-  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
+  const [currentLevelIndex, setCurrentLevelIndex] = useState(() => {
+    try {
+      const savedLevelIndex = localStorage.getItem('solitaryBlue_levelIndex');
+      if (savedLevelIndex) {
+        const parsedIndex = parseInt(savedLevelIndex, 10);
+        if (!isNaN(parsedIndex) && parsedIndex >= 0 && parsedIndex < LEVELS.length) {
+          return parsedIndex;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to read level index from localStorage", error);
+    }
+    return 0;
+  });
+  
+  const [winStreak, setWinStreak] = useState(() => {
+    try {
+      const savedWinStreak = localStorage.getItem('solitaryBlue_winStreak');
+      if (savedWinStreak) {
+        const parsedStreak = parseInt(savedWinStreak, 10);
+        if (!isNaN(parsedStreak) && parsedStreak >= 0) {
+          return parsedStreak;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to read win streak from localStorage", error);
+    }
+    return 0;
+  });
+
   const [gameStatus, setGameStatus] = useState<'PLAYING' | 'WON'>('PLAYING');
   const [resetKey, setResetKey] = useState(0);
-  const [winStreak, setWinStreak] = useState(0);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('solitaryBlue_levelIndex', currentLevelIndex.toString());
+    } catch (error) {
+      console.error("Failed to save level index to localStorage", error);
+    }
+  }, [currentLevelIndex]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('solitaryBlue_winStreak', winStreak.toString());
+    } catch (error) {
+      console.error("Failed to save win streak to localStorage", error);
+    }
+  }, [winStreak]);
 
   const currentLevel: Level = LEVELS[currentLevelIndex];
 
